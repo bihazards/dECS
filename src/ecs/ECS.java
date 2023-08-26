@@ -20,7 +20,7 @@ public class ECS extends Printable
 	// private Set<Integer> reservedEntityIDs = new HashSet<>();
 
 	// ComponentManager tings
-	private final Map<Archetype<?,?,?,?,?>, Map<WeakReference<Integer>,ComponentBundle<?,?,?,?,?>>> components = new ConcurrentHashMap<>();
+	private final Map<Archetype<?,?,?,?,?>, Map<Integer,ComponentBundle<?,?,?,?,?>>> components = new ConcurrentHashMap<>();
 
 	// SystemManager tings
 	private final List<System> systems = new ArrayList<>();
@@ -110,7 +110,7 @@ public class ECS extends Printable
 		}
 
 		// test iff archetype exists OR add
-		Map<WeakReference<Integer>,ComponentBundle<?,?,?,?,?>> archetypeComponents = this.components.get(archetype);
+		Map<Integer,ComponentBundle<?,?,?,?,?>> archetypeComponents = this.components.get(archetype);
 		if (archetypeComponents == null) // iff not exists...
 		{
 			archetypeComponents = new HashMap<>(); // create...
@@ -119,7 +119,7 @@ public class ECS extends Printable
 
 		// finally, add
 		entityIDs.add(entityID);
-		archetypeComponents.put(new WeakReference<Integer>(entityID),bundle); // iff there is an entity there, too bad
+		archetypeComponents.put(entityID,bundle); // iff there is an entity there, too bad
 		return entityID;
 	}
 
@@ -137,17 +137,18 @@ public class ECS extends Printable
 	//
 	public List<Entity> getEntitiesByArchetype(Archetype<?,?,?,?,?> archetype)
 	{
-		// Map<WeakReference<Integer>,ArrayList<Component>> entityMap = new HashMap<>();
+		// Map<Integer,ArrayList<Component>> entityMap = new HashMap<>();
 		// return this.proj.components.get(archetype);
 		List<Entity> entities = new ArrayList<>();
-		Map<WeakReference<Integer>,ComponentBundle<?,?,?,?,?>> entityMap = this.components.get(archetype);
+		Map<Integer,ComponentBundle<?,?,?,?,?>> entityMap = this.components.get(archetype);
 		print("searching for archetype ",archetype);
 		if (entityMap != null)
 		{
 			print("found archetype ",archetype);
-			for (Map.Entry<WeakReference<Integer>,ComponentBundle<?,?,?,?,?>> entityEntry : entityMap.entrySet())
+			for (Map.Entry<Integer,ComponentBundle<?,?,?,?,?>> entityEntry : entityMap.entrySet())
 			{
-				if (entityEntry.getKey().get() == null) // eID is invalid -> has been removed from EM
+				// key = eID
+				if (entityIDs.contains(entityEntry.getKey())) // eID is invalid -> has been removed from EM
 				{
 					continue ;
 					// removeEntity() ?
@@ -162,7 +163,7 @@ public class ECS extends Printable
 	{
 		List<Entity> entities = new ArrayList<>();
 
-		aLoop: for (Map.Entry<Archetype<?,?,?,?,?>,Map<WeakReference<Integer>,ComponentBundle<?,?,?,?,?>>> archetypeEntry : this.components.entrySet())
+		aLoop: for (Map.Entry<Archetype<?,?,?,?,?>,Map<Integer,ComponentBundle<?,?,?,?,?>>> archetypeEntry : this.components.entrySet())
 		{
 			// test has proj.components
 			Archetype<?,?,?,?,?> archetype = archetypeEntry.getKey();
@@ -178,8 +179,8 @@ public class ECS extends Printable
 			print("found entities w/ ",componentClasses.toString(),"in",archetype);
 
 			// add
-			Map<WeakReference<Integer>,ComponentBundle<?,?,?,?,?>> archetypeComponents = archetypeEntry.getValue();
-			for (Map.Entry<WeakReference<Integer>,ComponentBundle<?,?,?,?,?>> entityEntry : archetypeComponents.entrySet())
+			Map<Integer,ComponentBundle<?,?,?,?,?>> archetypeComponents = archetypeEntry.getValue();
+			for (Map.Entry<Integer,ComponentBundle<?,?,?,?,?>> entityEntry : archetypeComponents.entrySet())
 			{
 				addEntityIntoList(entities, entityEntry);
 			}
@@ -187,22 +188,25 @@ public class ECS extends Printable
 		return entities;
 	}
 
-	public void addEntityIntoList(List<Entity> entities, Map.Entry<WeakReference<Integer>,ComponentBundle<?,?,?,?,?>> entityEntry)
+	public void addEntityIntoList(List<Entity> entities, Map.Entry<Integer,ComponentBundle<?,?,?,?,?>> entityEntry)
 	{
 		entities.add(entityFromEntry(entityEntry));
 	}
 
-	public Entity entityFromEntry(Map.Entry<WeakReference<Integer>,ComponentBundle<?,?,?,?,?>> entityEntry)
+	public Entity entityFromEntry(Map.Entry<Integer,ComponentBundle<?,?,?,?,?>> entityEntry)
 	{
-		return new Entity(entityEntry.getKey().get(),entityEntry.getValue());
+		return new Entity(entityEntry.getKey(),entityEntry.getValue());
 	}
 
 	//
 
 	public void tick()
 	{
-		// update reservedIDs [ignore for now]
-		// tick systems *in order*
+		// process System Commands:
+			// - Entity Create
+			// - Entity Change Composition
+			// - Entity Remove
+
 		for (System system : systems)
 		{
 			system.tick();
@@ -217,15 +221,15 @@ public class ECS extends Printable
 	//
 	public void printAllComponents()
 	{
-		for (Map.Entry<Archetype<?,?,?,?,?>,Map<WeakReference<Integer>,ComponentBundle<?,?,?,?,?>>> archetypeEntry : this.components.entrySet())
+		for (Map.Entry<Archetype<?,?,?,?,?>,Map<Integer,ComponentBundle<?,?,?,?,?>>> archetypeEntry : this.components.entrySet())
 		{
 			Archetype<?,?,?,?,?> archetype = archetypeEntry.getKey();
-			Map<WeakReference<Integer>,ComponentBundle<?,?,?,?,?>> archetypeComponents = archetypeEntry.getValue();
+			Map<Integer,ComponentBundle<?,?,?,?,?>> archetypeComponents = archetypeEntry.getValue();
 
 			print("Archetype: ",archetype);
-			for (Map.Entry<WeakReference<Integer>,ComponentBundle<?,?,?,?,?>> archetypeComponentEntry : archetypeComponents.entrySet())
+			for (Map.Entry<Integer,ComponentBundle<?,?,?,?,?>> archetypeComponentEntry : archetypeComponents.entrySet())
 			{
-				int entityID = archetypeComponentEntry.getKey().get();
+				int entityID = archetypeComponentEntry.getKey();
 				ComponentBundle<?,?,?,?,?> componentBundle = archetypeComponentEntry.getValue();
 
 				print(entityID,"\t|\t",componentBundle.toString());
