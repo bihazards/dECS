@@ -2,17 +2,12 @@ package ecs;
 
 import printable.Printable;
 
-import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ECS extends Printable
 {
-	/*
-		Problem to resolve - how to remove an entity from a map => WRs
-	 */
-
 	// EntityManager tings
 	private final int maxEntities; // max size of entityIDs (cusomizable in ctor)
 	private static final int ENTITYID_INVALID = -1;
@@ -28,7 +23,7 @@ public class ECS extends Printable
 	// ctor
 	public ECS()
 	{
-		this(20); // default
+		this(1000); // default
 	}
 
 	public ECS(int maxEntities)
@@ -40,16 +35,6 @@ public class ECS extends Printable
 	}
 
 	// methods
-	public void method(Object ... args)
-	{
-
-	}
-
-	/*public void reserveEntityID()
-	{
-
-	}*/
-
 	/* int addEntity()
 	 *
 	 * RETURNS: int id OR invalid id value
@@ -78,6 +63,15 @@ public class ECS extends Printable
 			return entityID;
 		}
 
+		putEntity(entityID, components);
+
+		return entityID;
+	}
+
+	/* putEntity()
+	* - This version is intended for use when an id is already reserevd.*/
+	private void putEntity(int entityID, Object ... components)
+	{
 		// create Archetype
 		// move this to its own class? ArchetypeBuilder? Archetype.archetypeOf(Component ...) ?
 		Archetype<?,?,?,?,?> archetype ;
@@ -106,7 +100,7 @@ public class ECS extends Printable
 				break;
 			default:
 				// Exception?
-				return entityID;
+				return ;
 		}
 
 		// test iff archetype exists OR add
@@ -120,22 +114,140 @@ public class ECS extends Printable
 		// finally, add
 		entityIDs.add(entityID);
 		archetypeComponents.put(entityID,bundle); // iff there is an entity there, too bad
-		return entityID;
+
 	}
 
-	public <T1,T2,T3,T4,T5> void removeEntity(ComponentBundle<T1,T2,T3,T4,T5> components, int entityID)
+	public void changeEntityArchetype(int entityID, EntityArchetypeChangeRequest entityArchetypeChangeRequest)
 	{
-		Archetype<T1,T2,T3,T4,T5> archetype = Archetype.archetypeOf(components.getT1(),
-				components.getT2(), components.getT3(), components.getT4(), components.getT5());
+		printf("Starting EACR of +[%d], -[%d] to %s",entityArchetypeChangeRequest.componentsToAdd.size(), entityArchetypeChangeRequest.componentsToRemove.size(), entityArchetypeChangeRequest.getOldArchetype());
+		Archetype<?,?,?,?,?> oldArchetype = entityArchetypeChangeRequest.getOldArchetype();
 
-		if (this.components.containsKey(archetype))
+		Map<Integer,ComponentBundle<?,?,?,?,?>> archetypeComponentMap = this.components.get(oldArchetype);
+		if (archetypeComponentMap == null)
 		{
+			// throw Exception - archetype doesn't exist => eID can't exist
+			return ;
+		}
 
+		ComponentBundle<?,?,?,?,?> oldBundle = archetypeComponentMap.get(entityID);
+		if (oldBundle == null)
+		{
+			// throw Exception - eID doesn't exist
+			return ;
+		}
+
+		Set<Object> finalComponents = new HashSet<>();
+
+		Set<Class<?>> componentsToRemove = entityArchetypeChangeRequest.componentsToRemove;
+		ArrayList<?> componentsToAdd = new ArrayList<>(entityArchetypeChangeRequest.componentsToAdd);
+
+		// this can be made more efficient w/ an array(list) of Ts w/ start index...
+		// ...based on size()
+		switch (oldBundle.size())
+		{
+			case 5:
+				finalComponents.add(getNextBundleType(oldBundle.getT5(),
+						componentsToRemove,componentsToAdd,oldArchetype));
+			case 4:
+				finalComponents.add(getNextBundleType(oldBundle.getT4(),
+						componentsToRemove,componentsToAdd,oldArchetype));
+			case 3:
+				finalComponents.add(getNextBundleType(oldBundle.getT3(),
+						componentsToRemove,componentsToAdd,oldArchetype));
+			case 2:
+				finalComponents.add(getNextBundleType(oldBundle.getT2(),
+						componentsToRemove,componentsToAdd,oldArchetype));
+			case 1:
+				finalComponents.add(getNextBundleType(oldBundle.getT1(),
+						componentsToRemove,componentsToAdd,oldArchetype));
+				break;
+			default:
+				// exception?
+				return;
+		}
+
+		finalComponents.remove(Void.class); // remove any Voids iff present
+		// process remaining componentsToAdd iff any remain and
+		// finalComponents.size() permits.
+		// +overflow will be added NEXT
+		while (finalComponents.size() < 5 && componentsToAdd.size() > 0)
+		{
+			finalComponents.add(componentsToAdd.remove(0));
+		}
+
+		archetypeComponentMap.remove(entityID);
+		if (finalComponents.size() > 0)
+		{
+			// postcond
+			putEntity(entityID, finalComponents.toArray());
+		} // else: exception?
+
+		if (archetypeComponentMap.isEmpty())
+		{
+			this.components.remove(oldArchetype);
+		}
+
+		// print("Processed EACR -> ",ComponentBundle.bundleOf(finalComponents.toArray()[0], finalComponents.toArray()[1]));
+		prints("Processed EACR -> ");
+		print(finalComponents.toArray());
+	}
+
+	/* getNextArchetypeType()
+	* Used for changeEntityArchetype as a helper */
+	private Object getNextBundleType(Object t,
+									 Set<Class<?>> componentsToRemove,
+									 ArrayList<?> componentsToAdd,
+									 Archetype<?,?,?,?,?> oldArchetype)
+	{
+		Object _t = t;
+		for (Class<?> componentToRemove : componentsToRemove)
+		{
+			print("EACR: comparing ",componentToRemove,"to",t.getClass());
+			if (!componentToRemove.equals(t.getClass())) // no match
+			{
+				continue ;
+			}
+
+			_t = Void.class; // will be purged by primary method
+
+			if (componentsToAdd.size() == 0) // add is empty
+			{
+				return _t;
+			}
+
+			// try to be next ToAdd component instead
+			_t = componentsToAdd.remove(0);
+
+			if (oldArchetype.has(_t.getClass())) // class in archetype already
+			{
+				return Void.class ;
+			}
+			return _t;
+		}
+
+		return t;
+	}
+
+	public void removeEntity(EntityDeletionRequest entityDeletionRequest)
+	{
+		int entityID = entityDeletionRequest.getEntityID();
+		Archetype<?,?,?,?,?> archetype = entityDeletionRequest.getArchetype();
+		//
+		Map<Integer,ComponentBundle<?,?,?,?,?>> archetypeComponentMap = this.components.get(archetype);
+		if (archetypeComponentMap != null)
+		{
+			entityIDs.remove(entityID);
+			archetypeComponentMap.remove(entityID);
+
+			if (archetypeComponentMap.isEmpty())
+			{
+				this.components.remove(archetype);
+			}
 		}
 	}
 
 	//
-	public List<Entity> getEntitiesByArchetype(Archetype<?,?,?,?,?> archetype)
+	public List<Entity> entitiesWithArchetype(Archetype<?,?,?,?,?> archetype)
 	{
 		// Map<Integer,ArrayList<Component>> entityMap = new HashMap<>();
 		// return this.proj.components.get(archetype);
@@ -148,18 +260,47 @@ public class ECS extends Printable
 			for (Map.Entry<Integer,ComponentBundle<?,?,?,?,?>> entityEntry : entityMap.entrySet())
 			{
 				// key = eID
-				if (entityIDs.contains(entityEntry.getKey())) // eID is invalid -> has been removed from EM
+				/*if (entityIDs.contains(entityEntry.getKey())) // eID is invalid -> has been removed from EM
 				{
 					continue ;
 					// removeEntity() ?
-				}
-				addEntityIntoList(entities, entityEntry);
+				}*/ // removed validation; removeEntity() should be handling this
+				addEntityIntoList(entities, archetype, entityEntry);
 			}
 		}
 		return entities;
 	}
 
-	public List<Entity> getEntitiesWith(Class<?> ... componentClasses)
+	// what will the use case be for such a specific parse as opposed to eWCs()?
+	public List<Entity> entitiesWithArchetypes(Archetype<?,?,?,?,?> ... archetypes)
+	{
+		List<Entity> entities = new ArrayList<>();
+
+		for (Archetype<?,?,?,?,?> archetype : archetypes)
+		{
+			Map<Integer,ComponentBundle<?,?,?,?,?>> entityMap = this.components.get(archetype);
+			print("searching for archetype ",archetype);
+
+			if (entityMap == null)
+			{
+				continue;
+			}
+
+			for (Map.Entry<Integer, ComponentBundle<?, ?, ?, ?, ?>> entityEntry : entityMap.entrySet())
+			{
+				// key = eID
+				/*if (entityIDs.contains(entityEntry.getKey())) // eID is invalid -> has been removed from EM
+				{
+					continue;
+					// removeEntity() ?
+				}*/
+				addEntityIntoList(entities, archetype, entityEntry);
+			}
+		}
+		return entities;
+	}
+
+	public List<Entity> entitiesWithComponents(Class<?> ... componentClasses)
 	{
 		List<Entity> entities = new ArrayList<>();
 
@@ -182,35 +323,63 @@ public class ECS extends Printable
 			Map<Integer,ComponentBundle<?,?,?,?,?>> archetypeComponents = archetypeEntry.getValue();
 			for (Map.Entry<Integer,ComponentBundle<?,?,?,?,?>> entityEntry : archetypeComponents.entrySet())
 			{
-				addEntityIntoList(entities, entityEntry);
+				addEntityIntoList(entities, archetype, entityEntry);
 			}
 		}
 		return entities;
 	}
-
-	public void addEntityIntoList(List<Entity> entities, Map.Entry<Integer,ComponentBundle<?,?,?,?,?>> entityEntry)
+	
+	public void addSystem(System system)
 	{
-		entities.add(entityFromEntry(entityEntry));
+		this.systems.add(system);
 	}
 
-	public Entity entityFromEntry(Map.Entry<Integer,ComponentBundle<?,?,?,?,?>> entityEntry)
+	private void addEntityIntoList(List<Entity> entities, Archetype<?,?,?,?,?> archetype, Map.Entry<Integer,ComponentBundle<?,?,?,?,?>> entityEntry)
 	{
-		return new Entity(entityEntry.getKey(),entityEntry.getValue());
+		entities.add(entityFromEntry(archetype, entityEntry));
+	}
+
+	private Entity entityFromEntry(Archetype<?,?,?,?,?> archetype, Map.Entry<Integer,ComponentBundle<?,?,?,?,?>> entityEntry)
+	{
+		return new Entity(archetype, entityEntry.getKey(),entityEntry.getValue());
+	}
+
+	public int size() // taxing; careful
+	{
+		// find a more efficient way? - ie. changing an int from add/removeEntity()
+		return entityIDs.size();
 	}
 
 	//
 
-	public void tick()
+	public void update()
 	{
-		// process System Commands:
-			// - Entity Create
-			// - Entity Change Composition
-			// - Entity Remove
-
 		for (System system : systems)
 		{
-			system.tick();
-			// spawn queued entities
+			system.tick(this); // temporary: will in the future send EM and CM
+
+			// process requests
+			for (ComponentBundle<?,?,?,?,?> bundle : system.entitiesToCreate)
+			{
+				addEntity(bundle); // if one of the ? is Void, that's fine
+			}
+			system.entitiesToCreate.clear();
+
+			for (EntityDeletionRequest entityDeletionRequest : system.entitiesToRemove)
+			{
+				removeEntity(entityDeletionRequest);
+				printf("Processed EDR of [%d]@%s; new size -> %d",entityDeletionRequest.getEntityID(),entityDeletionRequest.getArchetype(),size());
+			}
+			system.entitiesToRemove.clear();
+
+			for (Map.Entry<Integer,EntityArchetypeChangeRequest> entityArchetypeChangeRequestEntry : system.entitiesToChange.entrySet())
+			{
+				int entityID = entityArchetypeChangeRequestEntry.getKey();
+				EntityArchetypeChangeRequest entityArchetypeChangeRequest = entityArchetypeChangeRequestEntry.getValue();
+
+				changeEntityArchetype(entityID, entityArchetypeChangeRequest);
+			}
+			system.entitiesToChange.clear();
 		}
 	}
 
@@ -218,6 +387,19 @@ public class ECS extends Printable
 	{
 
 	}*/
+
+	//
+	public Archetype<?,?,?,?,?> bundleToArchetype(ComponentBundle<?,?,?,?,?> bundle)
+	{
+		Object t5 = bundle.getT5();
+		/*if (bundle.getT5().getClass() == Archetype.class)
+		{
+			t5 = bundleToArchetype((ComponentBundle<?,?,?,?,?>) bundle.getT5()); // will recurse through
+		}*/
+		return Archetype.archetypeOf(bundle.getT1(),
+				bundle.getT2(), bundle.getT3(), bundle.getT4(), t5);
+	}
+
 	//
 	public void printAllComponents()
 	{
@@ -237,13 +419,9 @@ public class ECS extends Printable
 			print("--------------------------");
 		}
 	}
-	/* HOW TO HANDLE ENTITY REMOVAL? */
 	/*
 	- Don't tick() systems from here ?
 	 */
 	/* NEXT (all kind of related):
-	* - removeEntity()
-	* - Entity Commands: the ability for outside classes to declare a change to
-	* 					the structure/archetype of an entityID
 	* - reserving IDs (such as for death)*/
 }

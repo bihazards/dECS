@@ -1,32 +1,24 @@
 package ecs;
 
+import java.util.HashSet;
+import java.util.Set;
+
 class EntityArchetypeChangeRequest // => package-private
 {
-	private final int entityID ;
 	private final Archetype<?,?,?,?,?> oldArchetype;
-	private final ComponentBundle<?,?,?,?,?> newBundle ;
 
-	EntityArchetypeChangeRequest(Archetype<?,?,?,?,?> oldArchetype, int entityID,
-								 ComponentBundle<?,?,?,?,?> newBundle)
+	Set<Class<?>> componentsToRemove = new HashSet<>();
+	Set<Object> componentsToAdd = new HashSet<>();
+
+	EntityArchetypeChangeRequest(Archetype<?,?,?,?,?> oldArchetype)
 	{
 		this.oldArchetype = oldArchetype;
-		this.entityID = entityID;
-		this.newBundle = newBundle;
 	}
 
-	// getters
-	public int getEntityID()
-	{
-		return entityID;
-	}
+	//
 
-	public Archetype<?, ?, ?, ?, ?> getOldArchetype()
+	public Archetype<?,?,?,?,?> getOldArchetype()
 	{
 		return oldArchetype;
-	}
-
-	public ComponentBundle<?, ?, ?, ?, ?> getNewBundle()
-	{
-		return newBundle;
 	}
 }

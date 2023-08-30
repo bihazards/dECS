@@ -1,19 +1,31 @@
 package ecs;
 
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public class Entity
+public class Entity // package-private
 {
-	public int entityID ;
-	public ComponentBundle<?,?,?,?,?> components;
+	private final Archetype<?,?,?,?,?> archetype;
+	private final int entityID ;
+	private final ComponentBundle<?,?,?,?,?> bundle;
 
-	public Entity(int entityID, ComponentBundle<?,?,?,?,?> components)
+	public Entity(Archetype<?,?,?,?,?> archetype, int entityID, ComponentBundle<?,?,?,?,?> bundle)
 	{
+		this.archetype = archetype;
 		this.entityID = entityID;
-		this.components = components;
+		this.bundle = bundle;
 	}
 
+	// getters
+	public Archetype<?, ?, ?, ?, ?> getArchetype()
+	{
+		return archetype;
+	}
+
+	public int getEntityID()
+	{
+		return entityID;
+	}
+
+	public ComponentBundle<?, ?, ?, ?, ?> getBundle()
+	{
+		return bundle;
+	}
 }
