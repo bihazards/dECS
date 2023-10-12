@@ -1,13 +1,12 @@
 package proj.systems;
 
 import ecs.*;
-import ecs.System;
 import printable.Printable;
 import proj.components.InputComponent;
 import proj.components.RenderComponent;
 import proj.components.TransformComponent;
 
-public class UnitTestSystem1 extends System
+public class UnitTestSystem1 implements System
 {
 	public void tick(ECS ecs)
 	{

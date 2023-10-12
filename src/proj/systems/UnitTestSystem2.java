@@ -3,12 +3,11 @@ package proj.systems;
 import ecs.Archetype;
 import ecs.ECS;
 import ecs.Entity;
-import ecs.System;
 import printable.Printable;
 import proj.components.RenderComponent;
 import proj.components.TransformComponent;
 
-public class UnitTestSystem2 extends System
+public class UnitTestSystem2 implements System
 {
 	public void tick(ECS ecs)
 	{

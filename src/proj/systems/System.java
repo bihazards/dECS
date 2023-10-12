@@ -1,10 +1,12 @@
-package ecs;
+package proj.systems;
+
+import ecs.ECS;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public abstract class System
+public interface System
 {
 
 	public abstract void tick(ECS ecs);

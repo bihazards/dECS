@@ -1,6 +1,7 @@
 package ecs;
 
 import printable.Printable;
+import proj.systems.System;
 
 import java.util.*;
 import java.util.List;
@@ -21,7 +22,7 @@ public class ECS extends Printable
 	private final List<System> systems = new ArrayList<>();
 
 	// Requests
-	private final List<ComponentBundle<?,?,?,?,?>> entitiesToAdd = new ArrayList<>();
+	private final List<ComponentBundle<?, ?, ?, ?, ?>> entitiesToAdd = new ArrayList<>();
 	private final List<DeleteEntityRequest> entitiesToDelete = new ArrayList<>();
 	private final HashMap<Integer, ChangeArchetypeEntityRequest> entitiesToChange = new HashMap<>();
 
@@ -194,7 +195,7 @@ public class ECS extends Printable
 		return true;
 	}
 
-	private Archetype<?,?,?,?,?> nestArchetypes(Object ... archetypeComponentClasses)
+	private Archetype<?, ?, ?, ?, ?> nestArchetypes(Object... archetypeComponentClasses)
 	{
 		// number of nests is based on classes % 4 (mod) and classes / 4 (whole)
 		// iff mod=1 or whole=0 => nests = min(0,whole - 1)
@@ -206,7 +207,7 @@ public class ECS extends Printable
 		Object t5 = archetypeComponentClasses[4];
 		if (archetypeComponentClasses.length > 5) // MAGIC NUMBER
 		{
-			t5 = nestArchetypes(ECSUtil.copyOfRangeAndFill(archetypeComponentClasses,5,archetypeComponentClasses.length,ECSUtil.NONE));
+			t5 = nestArchetypes(ECSUtil.copyOfRangeAndFill(archetypeComponentClasses, 5, archetypeComponentClasses.length, ECSUtil.NONE));
 		}
 		return Archetype.archetypeOf(archetypeComponentClasses[0],
 				archetypeComponentClasses[1], archetypeComponentClasses[2],
@@ -368,8 +369,9 @@ public class ECS extends Printable
 			}
 		}
 	}
+
 	//
-	public final void requestAddEntity(ComponentBundle<?,?,?,?,?> components)
+	public final void requestAddEntity(ComponentBundle<?, ?, ?, ?, ?> components)
 	{
 		entitiesToAdd.add(components);
 	}
@@ -379,12 +381,12 @@ public class ECS extends Printable
 		entitiesToDelete.add(new DeleteEntityRequest(entity.getArchetype(), entity.getEntityID()));
 	}
 
-	private ChangeArchetypeEntityRequest requestChangeEntityArchetype(Entity entity, Object ... components)
+	private ChangeArchetypeEntityRequest requestChangeEntityArchetype(Entity entity, Object... components)
 	{
 		if (components.length == 0)
 		{
 			// throw Exception;
-			return null ;
+			return null;
 		}
 
 		// check iff entity has change request already
@@ -399,7 +401,7 @@ public class ECS extends Printable
 		return changeArchetypeEntityRequest;
 	}
 
-	public void requestAddComponent(Entity entity, Object ... componentsToAdd)
+	public void requestAddComponent(Entity entity, Object... componentsToAdd)
 	{ // note: can be called w/ 0-length; can fix with a definite param before varargs but eh
 		ChangeArchetypeEntityRequest changeArchetypeEntityRequest = requestChangeEntityArchetype(entity, componentsToAdd);
 
@@ -409,7 +411,7 @@ public class ECS extends Printable
 		}
 	}
 
-	public void requestRemoveComponent(Entity entity, Class<?> ... componentsToRemove)
+	public void requestRemoveComponent(Entity entity, Class<?>... componentsToRemove)
 	{
 		ChangeArchetypeEntityRequest changeArchetypeEntityRequest = requestChangeEntityArchetype(entity, componentsToRemove);
 
@@ -509,11 +511,6 @@ public class ECS extends Printable
 		return entities;
 	}
 
-	public void addSystem(System system)
-	{
-		this.systems.add(system);
-	}
-
 	private void addEntityIntoList(List<Entity> entities, Archetype<?, ?, ?, ?, ?> archetype, Map.Entry<Integer, ComponentBundle<?, ?, ?, ?, ?>> entityEntry)
 	{
 		entities.add(entityFromEntry(archetype, entityEntry));
@@ -532,35 +529,30 @@ public class ECS extends Printable
 
 	//
 
-	public void update()
+	public void process()
 	{
-		for (System system : systems)
+		// process requests
+		for (ComponentBundle<?, ?, ?, ?, ?> bundle : entitiesToAdd)
 		{
-			system.tick(this); // temporary: will in the future send EM and CM
-
-			// process requests
-			for (ComponentBundle<?, ?, ?, ?, ?> bundle : system.entitiesToCreate)
-			{
-				addEntity(bundle); // if one of the ? is Void, that's fine
-			}
-			system.entitiesToCreate.clear();
-
-			for (DeleteEntityRequest deleteEntityRequest : system.entitiesToRemove)
-			{
-				removeEntity(deleteEntityRequest);
-				printf("Processed EDR of [%d]@%s; new size -> %d", deleteEntityRequest.getEntityID(), deleteEntityRequest.getArchetype(), size());
-			}
-			system.entitiesToRemove.clear();
-
-			for (Map.Entry<Integer, ChangeArchetypeEntityRequest> entityArchetypeChangeRequestEntry : system.entitiesToChange.entrySet())
-			{
-				int entityID = entityArchetypeChangeRequestEntry.getKey();
-				ChangeArchetypeEntityRequest changeArchetypeEntityRequest = entityArchetypeChangeRequestEntry.getValue();
-
-				changeEntityArchetype(entityID, changeArchetypeEntityRequest);
-			}
-			system.entitiesToChange.clear();
+			addEntity(bundle); // if one of the ? is Void, that's fine
 		}
+		entitiesToAdd.clear();
+
+		for (DeleteEntityRequest deleteEntityRequest : entitiesToDelete)
+		{
+			removeEntity(deleteEntityRequest);
+			printf("Processed EDR of [%d]@%s; new size -> %d", deleteEntityRequest.getEntityID(), deleteEntityRequest.getArchetype(), size());
+		}
+		entitiesToDelete.clear();
+
+		for (Map.Entry<Integer, ChangeArchetypeEntityRequest> entityArchetypeChangeRequestEntry : entitiesToChange.entrySet())
+		{
+			int entityID = entityArchetypeChangeRequestEntry.getKey();
+			ChangeArchetypeEntityRequest changeArchetypeEntityRequest = entityArchetypeChangeRequestEntry.getValue();
+
+			changeEntityArchetype(entityID, changeArchetypeEntityRequest);
+		}
+		entitiesToChange.clear();
 	}
 
 	/*public void render(Graphics graphics)
