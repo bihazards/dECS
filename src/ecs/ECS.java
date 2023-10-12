@@ -20,6 +20,11 @@ public class ECS extends Printable
 	// SystemManager tings
 	private final List<System> systems = new ArrayList<>();
 
+	// Requests
+	private final List<ComponentBundle<?,?,?,?,?>> entitiesToAdd = new ArrayList<>();
+	private final List<DeleteEntityRequest> entitiesToDelete = new ArrayList<>();
+	private final HashMap<Integer, ChangeArchetypeEntityRequest> entitiesToChange = new HashMap<>();
+
 	// ctor
 	public ECS()
 	{
@@ -208,10 +213,10 @@ public class ECS extends Printable
 				archetypeComponentClasses[3], t5);
 	}
 
-	public void changeEntityArchetype(int entityID, EntityArchetypeChangeRequest entityArchetypeChangeRequest)
+	public void changeEntityArchetype(int entityID, ChangeArchetypeEntityRequest changeArchetypeEntityRequest)
 	{
-		printf("Starting EACR of +[%d], -[%d] to %s", entityArchetypeChangeRequest.componentsToAdd.size(), entityArchetypeChangeRequest.componentsToRemove.size(), entityArchetypeChangeRequest.getOldArchetype());
-		Archetype<?, ?, ?, ?, ?> oldArchetype = entityArchetypeChangeRequest.getOldArchetype();
+		printf("Starting EACR of +[%d], -[%d] to %s", changeArchetypeEntityRequest.componentsToAdd.size(), changeArchetypeEntityRequest.componentsToRemove.size(), changeArchetypeEntityRequest.getOldArchetype());
+		Archetype<?, ?, ?, ?, ?> oldArchetype = changeArchetypeEntityRequest.getOldArchetype();
 
 		Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponentMap = this.components.get(oldArchetype);
 		if (archetypeComponentMap == null)
@@ -229,8 +234,8 @@ public class ECS extends Printable
 
 		Set<Object> finalComponents = new HashSet<>();
 
-		Set<Class<?>> componentsToRemove = entityArchetypeChangeRequest.componentsToRemove;
-		ArrayList<?> componentsToAdd = new ArrayList<>(entityArchetypeChangeRequest.componentsToAdd);
+		Set<Class<?>> componentsToRemove = changeArchetypeEntityRequest.componentsToRemove;
+		ArrayList<?> componentsToAdd = new ArrayList<>(changeArchetypeEntityRequest.componentsToAdd);
 
 		// this can be made more efficient w/ an array(list) of Ts w/ start index...
 		// ...based on size()
@@ -346,10 +351,10 @@ public class ECS extends Printable
 		return t;
 	}
 
-	public void removeEntity(EntityDeletionRequest entityDeletionRequest)
+	public void removeEntity(DeleteEntityRequest deleteEntityRequest)
 	{
-		int entityID = entityDeletionRequest.getEntityID();
-		Archetype<?, ?, ?, ?, ?> archetype = entityDeletionRequest.getArchetype();
+		int entityID = deleteEntityRequest.getEntityID();
+		Archetype<?, ?, ?, ?, ?> archetype = deleteEntityRequest.getArchetype();
 		//
 		Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponentMap = this.components.get(archetype);
 		if (archetypeComponentMap != null)
@@ -361,6 +366,56 @@ public class ECS extends Printable
 			{
 				this.components.remove(archetype);
 			}
+		}
+	}
+	//
+	public final void requestAddEntity(ComponentBundle<?,?,?,?,?> components)
+	{
+		entitiesToAdd.add(components);
+	}
+
+	public final void requestDeleteEntity(Entity entity)
+	{
+		entitiesToDelete.add(new DeleteEntityRequest(entity.getArchetype(), entity.getEntityID()));
+	}
+
+	private ChangeArchetypeEntityRequest requestChangeEntityArchetype(Entity entity, Object ... components)
+	{
+		if (components.length == 0)
+		{
+			// throw Exception;
+			return null ;
+		}
+
+		// check iff entity has change request already
+		int entityID = entity.getEntityID();
+
+		ChangeArchetypeEntityRequest changeArchetypeEntityRequest = entitiesToChange.get(entityID); // iff exists already, use existing request
+		if (changeArchetypeEntityRequest == null) // doesn't exist already
+		{
+			changeArchetypeEntityRequest = new ChangeArchetypeEntityRequest(entity.getArchetype());
+			entitiesToChange.put(entityID, changeArchetypeEntityRequest);
+		}
+		return changeArchetypeEntityRequest;
+	}
+
+	public void requestAddComponent(Entity entity, Object ... componentsToAdd)
+	{ // note: can be called w/ 0-length; can fix with a definite param before varargs but eh
+		ChangeArchetypeEntityRequest changeArchetypeEntityRequest = requestChangeEntityArchetype(entity, componentsToAdd);
+
+		for (Object componentToAdd : componentsToAdd)
+		{
+			changeArchetypeEntityRequest.componentsToAdd.add(componentToAdd);
+		}
+	}
+
+	public void requestRemoveComponent(Entity entity, Class<?> ... componentsToRemove)
+	{
+		ChangeArchetypeEntityRequest changeArchetypeEntityRequest = requestChangeEntityArchetype(entity, componentsToRemove);
+
+		for (Class<?> componentToRemove : componentsToRemove)
+		{
+			changeArchetypeEntityRequest.componentsToRemove.add(componentToRemove);
 		}
 	}
 
@@ -490,19 +545,19 @@ public class ECS extends Printable
 			}
 			system.entitiesToCreate.clear();
 
-			for (EntityDeletionRequest entityDeletionRequest : system.entitiesToRemove)
+			for (DeleteEntityRequest deleteEntityRequest : system.entitiesToRemove)
 			{
-				removeEntity(entityDeletionRequest);
-				printf("Processed EDR of [%d]@%s; new size -> %d", entityDeletionRequest.getEntityID(), entityDeletionRequest.getArchetype(), size());
+				removeEntity(deleteEntityRequest);
+				printf("Processed EDR of [%d]@%s; new size -> %d", deleteEntityRequest.getEntityID(), deleteEntityRequest.getArchetype(), size());
 			}
 			system.entitiesToRemove.clear();
 
-			for (Map.Entry<Integer, EntityArchetypeChangeRequest> entityArchetypeChangeRequestEntry : system.entitiesToChange.entrySet())
+			for (Map.Entry<Integer, ChangeArchetypeEntityRequest> entityArchetypeChangeRequestEntry : system.entitiesToChange.entrySet())
 			{
 				int entityID = entityArchetypeChangeRequestEntry.getKey();
-				EntityArchetypeChangeRequest entityArchetypeChangeRequest = entityArchetypeChangeRequestEntry.getValue();
+				ChangeArchetypeEntityRequest changeArchetypeEntityRequest = entityArchetypeChangeRequestEntry.getValue();
 
-				changeEntityArchetype(entityID, entityArchetypeChangeRequest);
+				changeEntityArchetype(entityID, changeArchetypeEntityRequest);
 			}
 			system.entitiesToChange.clear();
 		}
