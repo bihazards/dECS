@@ -4,10 +4,11 @@ import ecs.Archetype;
 import ecs.ECS;
 import ecs.Entity;
 import ecs.System;
+import printable.Printable;
 import proj.components.RenderComponent;
 import proj.components.TransformComponent;
 
-public class System2 extends System
+public class UnitTestSystem2 extends System
 {
 	public void tick(ECS ecs)
 	{
@@ -17,6 +18,9 @@ public class System2 extends System
 			requestEntityAddComponent(entity, new RenderComponent(5));
 			requestEntityRemoveComponent(entity, TransformComponent.class);
 		}
+
+		Printable.print("UNIT TEST 2 COMPLETE");
+		Printable.print("--------------------");
 	}
 
 	/* ISSUE - EACRs print that they're processed properly in the console,

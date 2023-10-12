@@ -3,26 +3,35 @@ package ecs;
 import java.util.Objects;
 
 
-public class ComponentBundle<T1,T2,T3,T4,T5>
+public class ComponentBundle<T1, T2, T3, T4, T5>
 {
-	private final T1 t1 ;
-	private final T2 t2 ;
-	private final T3 t3 ;
-	private final T4 t4 ;
-	private final T5 t5 ;
-	private final int size ;
+
+	private final T1 t1;
+	private final T2 t2;
+	private final T3 t3;
+	private final T4 t4;
+	private final T5 t5;
+	private final int size;
 
 	private ComponentBundle(int size, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5)
 	{
-		this.size = size;
 		this.t1 = t1;
 		this.t2 = t2;
 		this.t3 = t3;
 		this.t4 = t4;
 		this.t5 = t5;
+
+		// calculate size
+		this.size = size;
 	}
+
 	public <T> T get(Class<T> componentClass)
 	{
+		if (componentClass == ComponentBundle.class)
+		{
+			return null;
+		}
+
 		if (t1.getClass() == componentClass)
 		{
 			return (T) t1;
@@ -38,44 +47,88 @@ public class ComponentBundle<T1,T2,T3,T4,T5>
 		} else if (t5.getClass() == componentClass)
 		{
 			return (T) t5;
+		} else if (t5.getClass() == ComponentBundle.class)
+		{
+			return ((ComponentBundle<?,?,?,?,?>) t5).get(componentClass);
 		}
 		return null;
 	}
 
-	//
-	public static <T1, T2, T3, T4, T5> ComponentBundle<T1,T2,T3,T4,T5> bundleOf(T1 t1, T2 t2, T3 t3, T4 t4, T5 t5)
+	// helper
+	private static <T1, T2, T3, T4, T5> ComponentBundle<T1, T2, T3, T4, T5> generate(T1 t1, T2 t2, T3 t3, T4 t4, T5 t5)
 	{
-		return new ComponentBundle<T1,T2,T3,T4,T5>(5,t1,t2,t3,t4,t5);
+		// validate int size?
+		int size = 0;
+		if (t1 != ECSUtil.NONE) size ++;
+		if (t2 != ECSUtil.NONE) size ++;
+		if (t3 != ECSUtil.NONE) size ++;
+		if (t4 != ECSUtil.NONE) size ++;
+		if (t5 != ECSUtil.NONE)
+		{
+			if (t5.getClass() == ComponentBundle.class) size++;
+			else size += ((ComponentBundle<?, ?, ?, ?, ?>) t5).size();
+		}
+		return new ComponentBundle<>(size, t1, t2, t3, t4, t5);
 	}
 
-	public static <T1, T2, T3, T4> ComponentBundle<T1,T2,T3,T4,Class<Void>> bundleOf(T1 t1, T2 t2, T3 t3, T4 t4)
+	// generator
+	/// (5->1)
+	public static <T1, T2, T3, T4, T5> ComponentBundle<T1, T2, T3, T4, T5> bundleOf(T1 t1, T2 t2, T3 t3, T4 t4, T5 t5)
 	{
-		return new ComponentBundle<T1,T2,T3,T4,Class<Void>>(4,t1,t2,t3,t4,Void.class);
+		return generate(t1, t2, t3, t4, t5);
 	}
 
-	public static <T1, T2, T3> ComponentBundle<T1,T2,T3,Class<Void>,Class<Void>> bundleOf(T1 t1, T2 t2, T3 t3)
+	/*public static <T1, T2, T3, T4> ComponentBundle<T1, T2, T3, T4, Class<?>> bundleOf(T1 t1, T2 t2, T3 t3, T4 t4)
 	{
-		return new ComponentBundle<T1,T2,T3,Class<Void>,Class<Void>>(3,t1,t2,t3,Void.class,Void.class);
+		return generate(t1, t2, t3, t4, NO_CLASS);
 	}
 
-	public static <T1, T2> ComponentBundle<T1,T2,Class<Void>,Class<Void>,Class<Void>> bundleOf(T1 t1, T2 t2)
+	public static <T1, T2, T3> ComponentBundle<T1, T2, T3, Class<?>, Class<?>> bundleOf(T1 t1, T2 t2, T3 t3)
 	{
-		return new ComponentBundle<T1,T2,Class<Void>,Class<Void>,Class<Void>>(2,t1,t2,Void.class,Void.class,Void.class);
+		return generate(t1, t2, t3, NO_CLASS, NO_CLASS);
 	}
 
-	public static <T1> ComponentBundle<T1,Class<Void>,Class<Void>,Class<Void>,Class<Void>> bundleOf(T1 t1)
+	public static <T1, T2> ComponentBundle<T1, T2, Class<?>, Class<?>, Class<?>> bundleOf(T1 t1, T2 t2)
 	{
-		return new ComponentBundle<T1,Class<Void>,Class<Void>,Class<Void>,Class<Void>>(1,t1,Void.class,Void.class,Void.class,Void.class);
+		return generate(t1, t2, NO_CLASS, NO_CLASS, NO_CLASS);
 	}
 
-	//
+	public static <T1> ComponentBundle<T1, Class<?>, Class<?>, Class<?>, Class<?>> bundleOf(T1 t1)
+	{
+		return generate(t1, NO_CLASS, NO_CLASS, NO_CLASS, NO_CLASS);
+	}*/
+
+	/// extensions (9->6)
+	public static <T1,T2,T3,T4,T5,T6,T7,T8,T9> ComponentBundle<T1,T2,T3,T4,ComponentBundle<T5,T6,T7,T8,T9>> bundleOf(T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6, T7 t7, T8 t8, T9 t9)
+	{
+		return generate(t1,t2,t3,t4,generate(t5,t6,t7,t8,t9));
+	}
+
+	/*public static <T1,T2,T3,T4,T5,T6,T7,T8> ComponentBundle<T1,T2,T3,T4,ComponentBundle<T5,T6,T7,T8,Class<?>>> bundleOf(T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6, T7 t7, T8 t8)
+	{
+		return generate(t1,t2,t3,t4,generate(t5,t6,t7,t8,NO_CLASS));
+	}
+
+	public static <T1,T2,T3,T4,T5,T6,T7> ComponentBundle<T1,T2,T3,T4,ComponentBundle<T5,T6,T7,Class<?>,Class<?>>> bundleOf(T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6, T7 t7)
+	{
+		return generate(t1,t2,t3,t4,generate(t5,t6,t7,NO_CLASS,NO_CLASS));
+	}
+
+	public static <T1,T2,T3,T4,T5,T6> ComponentBundle<T1,T2,T3,T4,ComponentBundle<T5,T6,Class<?>,Class<?>,Class<?>>> bundleOf(T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6)
+	{
+		return generate(t1,t2,t3,t4,generate(t5,t6,NO_CLASS,NO_CLASS,NO_CLASS));
+	}*/
+
+	// getter stuff
 	public boolean has(Class<?> componentClass)
 	{
 		return t1.getClass() == componentClass ||
 				t2.getClass() == componentClass ||
 				t3.getClass() == componentClass ||
 				t4.getClass() == componentClass ||
-				t5.getClass() == componentClass ;
+				t5.getClass() == componentClass ||
+				(t5.getClass() == ComponentBundle.class
+						&& ((ComponentBundle<?,?,?,?,?>) t5).has(componentClass));
 
 	}
 
@@ -84,7 +137,7 @@ public class ComponentBundle<T1,T2,T3,T4,T5>
 	{
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		ComponentBundle<?,?,?,?,?> cb = (ComponentBundle<?,?,?,?,?>) o;
+		ComponentBundle<?, ?, ?, ?, ?> cb = (ComponentBundle<?, ?, ?, ?, ?>) o;
 		return t1.equals(cb.t1) &&
 				t2.equals(cb.t2) &&
 				t3.equals(cb.t3) &&
@@ -97,7 +150,7 @@ public class ComponentBundle<T1,T2,T3,T4,T5>
 	{
 		// using hashCodes in an unordered manner allows ComponentBundles
 		// with different component class orders to be treated as equal
-		return Objects.hash(t1,t2,t3,t4,t5);
+		return Objects.hash(t1, t2, t3, t4, t5);
 	}
 
 	@Override

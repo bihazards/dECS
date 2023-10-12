@@ -7,7 +7,7 @@ import proj.components.InputComponent;
 import proj.components.RenderComponent;
 import proj.components.TransformComponent;
 
-public class System1 extends System
+public class UnitTestSystem1 extends System
 {
 	public void tick(ECS ecs)
 	{
@@ -19,8 +19,8 @@ public class System1 extends System
 		ecs.addEntity(new RenderComponent(5), new TransformComponent(16,12));
 		ecs.addEntity(new TransformComponent(16,12), new RenderComponent(5));
 
+		Printable.print("all components [should be 4 entities->2 w/ rC+tC]");
 		ecs.printAllComponents();
-
 		Printable.print(ecs.entitiesWithArchetype(Archetype.archetypeOf(TransformComponent.class,RenderComponent.class)).size()); // why does this not work anymore ?
 
 		// testing searching by archetype
@@ -40,15 +40,23 @@ public class System1 extends System
 			Printable.printf("[%d].T=(%d,%d)",entity.getEntityID(),transformComponent.x,transformComponent.y);
 		}
 
-		Printable.print(ecs.entitiesWithArchetype(Archetype.archetypeOf(InputComponent.class)).size());
+		Printable.print(ecs.entitiesWithArchetype(Archetype.archetypeOf(InputComponent.class)).size()); // expected => 0
 
 		// TEST needed: incorrect archetype, incorrect With() 	[done, done]
 		// TEST needed: With()									[done]
 
-		// test EDR
+		// test EntityDeletionRequest
 		for (Entity entity : ecs.entitiesWithComponents(RenderComponent.class))
 		{
 			requestEntityDeletion(entity);
 		}
+
+		// testing dupe components
+		int id = ecs.addEntity(new RenderComponent(0), new TransformComponent(1,2), new TransformComponent(2,3));
+		Printable.print("id=",id);
+		ecs.printAllComponents(); // should be 4 entities still, as EDR doesn't process immediately (yet)
+		//
+		Printable.print("UNIT TEST 1 COMPLETE");
+		Printable.print("--------------------");
 	}
 }

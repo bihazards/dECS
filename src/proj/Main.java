@@ -1,9 +1,12 @@
 package proj;
 
+import ecs.Archetype;
 import ecs.ECS;
 import printable.Printable;
-import proj.systems.System1;
-import proj.systems.System2;
+import proj.components.RenderComponent;
+import proj.components.TransformComponent;
+import proj.systems.UnitTestSystem1;
+import proj.systems.UnitTestSystem2;
 
 public class Main extends Printable
 {
@@ -12,17 +15,14 @@ public class Main extends Printable
 		long start = System.currentTimeMillis();
 		ECS ecs = new ECS();
 
-		ecs.addSystem(new System1());
-		ecs.addSystem(new System2());
+		ecs.addSystem(new UnitTestSystem1());
+		ecs.addSystem(new UnitTestSystem2());
 		ecs.update();
-		ecs.printAllComponents();
+		ecs.printAllComponents(); // should be [1] entity, w/ an rC
+
+		// ecs.addEntity(new RenderComponent(1),new TransformComponent(1,2),new TransformComponent(1,2));
 
 		long end = System.currentTimeMillis();
 		print("Runtime: ",(end-start)/1000f,"s");
 	}
-
-	/*
-		ANTICIPATED ISSUE 1: What happens iff EM entityID list ends up out of sync
-		w/ ids in CM? [can this happen beyond editing ECS?]
-	 */
 }
