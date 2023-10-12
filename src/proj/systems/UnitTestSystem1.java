@@ -47,7 +47,7 @@ public class UnitTestSystem1 implements System
 		// test EntityDeletionRequest
 		for (Entity entity : ecs.entitiesWithComponents(RenderComponent.class))
 		{
-			requestEntityDeletion(entity);
+			ecs.requestDeleteEntity(entity);
 		}
 
 		// testing dupe components

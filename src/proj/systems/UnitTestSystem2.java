@@ -14,8 +14,8 @@ public class UnitTestSystem2 implements System
 		// test EACR
 		for (Entity entity : ecs.entitiesWithArchetype(Archetype.archetypeOf(TransformComponent.class)))
 		{
-			requestEntityAddComponent(entity, new RenderComponent(5));
-			requestEntityRemoveComponent(entity, TransformComponent.class);
+			ecs.requestAddComponent(entity, new RenderComponent(5));
+			ecs.requestRemoveComponent(entity, TransformComponent.class);
 		}
 
 		Printable.print("UNIT TEST 2 COMPLETE");

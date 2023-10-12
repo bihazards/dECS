@@ -91,33 +91,6 @@ public class ECS extends Printable
 		Archetype<?, ?, ?, ?, ?> archetype;
 		ComponentBundle<?, ?, ?, ?, ?> bundle;
 
-		/*switch (components.length)
-		{
-			case 1:
-				archetype = Archetype.archetypeOf(components[0].getClass());
-				bundle = ComponentBundle.bundleOf(components[0]);
-				break;
-			case 2:
-				archetype = Archetype.archetypeOf(components[0].getClass(), components[1].getClass());
-				bundle = ComponentBundle.bundleOf(components[0], components[1]);
-				break;
-			case 3:
-				archetype = Archetype.archetypeOf(components[0].getClass(), components[1].getClass(), components[2].getClass());
-				bundle = ComponentBundle.bundleOf(components[0], components[1], components[2]);
-				break;
-			case 4:
-				archetype = Archetype.archetypeOf(components[0].getClass(), components[1].getClass(), components[2].getClass(), components[3].getClass());
-				bundle = ComponentBundle.bundleOf(components[0], components[1], components[2], components[3]);
-				break;
-			case 5:
-				archetype = Archetype.archetypeOf(components[0].getClass(), components[1].getClass(), components[2].getClass(), components[3].getClass(), components[4].getClass());
-				bundle = ComponentBundle.bundleOf(components[0], components[1], components[2], components[3], components[4]);
-				break;
-			default:
-				// Exception?
-				return;
-		}*/
-
 		int max = 5;
 		if (components.length > 5)
 		{
@@ -150,9 +123,6 @@ public class ECS extends Printable
 			}
 			componentTypes.add(archetypeComponentClass);
 		}
-
-
-		// systematically build these using recursion/loop @ last index??
 
 		//
 		if (max == 5)
@@ -216,7 +186,7 @@ public class ECS extends Printable
 
 	public void changeEntityArchetype(int entityID, ChangeArchetypeEntityRequest changeArchetypeEntityRequest)
 	{
-		printf("Starting EACR of +[%d], -[%d] to %s", changeArchetypeEntityRequest.componentsToAdd.size(), changeArchetypeEntityRequest.componentsToRemove.size(), changeArchetypeEntityRequest.getOldArchetype());
+		printf("Starting CAER of +[%d], -[%d] to %s", changeArchetypeEntityRequest.componentsToAdd.size(), changeArchetypeEntityRequest.componentsToRemove.size(), changeArchetypeEntityRequest.getOldArchetype());
 		Archetype<?, ?, ?, ?, ?> oldArchetype = changeArchetypeEntityRequest.getOldArchetype();
 
 		Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponentMap = this.components.get(oldArchetype);
@@ -238,34 +208,6 @@ public class ECS extends Printable
 		Set<Class<?>> componentsToRemove = changeArchetypeEntityRequest.componentsToRemove;
 		ArrayList<?> componentsToAdd = new ArrayList<>(changeArchetypeEntityRequest.componentsToAdd);
 
-		// this can be made more efficient w/ an array(list) of Ts w/ start index...
-		// ...based on size()
-		/*switch (oldBundle.size())
-		{
-			case 9:
-			case 8:
-			case 7:
-			case 6:
-			case 5:
-				finalComponents.add(getNextBundleType(oldBundle.getT5(),
-						componentsToRemove, componentsToAdd, oldArchetype));
-			case 4:
-				finalComponents.add(getNextBundleType(oldBundle.getT4(),
-						componentsToRemove, componentsToAdd, oldArchetype));
-			case 3:
-				finalComponents.add(getNextBundleType(oldBundle.getT3(),
-						componentsToRemove, componentsToAdd, oldArchetype));
-			case 2:
-				finalComponents.add(getNextBundleType(oldBundle.getT2(),
-						componentsToRemove, componentsToAdd, oldArchetype));
-			case 1:
-				finalComponents.add(getNextBundleType(oldBundle.getT1(),
-						componentsToRemove, componentsToAdd, oldArchetype));
-				break;
-			default:
-				// exception?
-				return;
-		}*/
 		Object[] oldComponents = new Object[(int) (Math.ceil((float) oldBundle.size() / 5) * 5)]; // round up to nearest 5
 		oldComponents[0] = oldBundle.getT1();
 		oldComponents[1] = oldBundle.getT2();
@@ -309,8 +251,8 @@ public class ECS extends Printable
 			this.components.remove(oldArchetype);
 		}
 
-		// print("Processed EACR -> ",ComponentBundle.bundleOf(finalComponents.toArray()[0], finalComponents.toArray()[1]));
-		prints("Processed EACR -> ");
+		// print("Processed CAER -> ",ComponentBundle.bundleOf(finalComponents.toArray()[0], finalComponents.toArray()[1]));
+		prints("Processed CAER -> ");
 		print(finalComponents.toArray());
 	}
 
@@ -326,7 +268,7 @@ public class ECS extends Printable
 		Object _t = t;
 		for (Class<?> componentToRemove : componentsToRemove)
 		{
-			print("EACR: comparing ", componentToRemove, "to", t.getClass());
+			print("CAER: comparing ", componentToRemove, "to", t.getClass());
 			if (!componentToRemove.equals(t.getClass())) // no match
 			{
 				continue;
@@ -541,7 +483,7 @@ public class ECS extends Printable
 		for (DeleteEntityRequest deleteEntityRequest : entitiesToDelete)
 		{
 			removeEntity(deleteEntityRequest);
-			printf("Processed EDR of [%d]@%s; new size -> %d", deleteEntityRequest.getEntityID(), deleteEntityRequest.getArchetype(), size());
+			printf("Processed DER of [%d]@%s; new size -> %d", deleteEntityRequest.getEntityID(), deleteEntityRequest.getArchetype(), size());
 		}
 		entitiesToDelete.clear();
 
@@ -554,20 +496,6 @@ public class ECS extends Printable
 		}
 		entitiesToChange.clear();
 	}
-
-	/*public void render(Graphics graphics)
-	{
-
-	}*/
-
-	//
-	/*public Archetype<?, ?, ?, ?, ?> bundleToArchetype(ComponentBundle<?, ?, ?, ?, ?> bundle)
-	{
-		Object t5 = bundle.getT5();
-
-		return Archetype.archetypeOf(bundle.getT1(),
-				bundle.getT2(), bundle.getT3(), bundle.getT4(), t5);
-	}*/
 
 	//
 	public void printAllComponents()

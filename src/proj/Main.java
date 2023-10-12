@@ -7,22 +7,30 @@ import proj.components.RenderComponent;
 import proj.components.TransformComponent;
 import proj.systems.UnitTestSystem1;
 import proj.systems.UnitTestSystem2;
+import proj.systems.System;
 
 public class Main extends Printable
 {
 	public static void main(String[] args)
 	{
-		long start = System.currentTimeMillis();
+		long start = time();
 		ECS ecs = new ECS();
 
-		ecs.addSystem(new UnitTestSystem1());
-		ecs.addSystem(new UnitTestSystem2());
-		ecs.update();
+		for (System system : new System[]{new UnitTestSystem1(),new UnitTestSystem2()})
+		{
+			system.tick(ecs);
+		}
+		ecs.process();
 		ecs.printAllComponents(); // should be [1] entity, w/ an rC
 
 		// ecs.addEntity(new RenderComponent(1),new TransformComponent(1,2),new TransformComponent(1,2));
 
-		long end = System.currentTimeMillis();
+		long end = time();
 		print("Runtime: ",(end-start)/1000f,"s");
+	}
+
+	public static long time() // for ease
+	{
+		return java.lang.System.currentTimeMillis();
 	}
 }
