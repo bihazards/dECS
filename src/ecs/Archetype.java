@@ -1,6 +1,8 @@
 package ecs;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public class Archetype<T1, T2, T3, T4, T5> // optional: Tx extends Component
 {
@@ -25,9 +27,11 @@ public class Archetype<T1, T2, T3, T4, T5> // optional: Tx extends Component
 		this.size = size;
 	}
 
-	// private factory
+	/* generate()
+	* ~= factory */
 	private static <T1, T2, T3, T4, T5> Archetype<T1, T2, T3, T4, T5> generate(T1 t1, T2 t2, T3 t3, T4 t4, T5 t5)
-	{ // ~=archetypeOfHelper
+	{
+		Object [] ts = new Object[]	{t1,t2,t3,t4,t5};
 		if (t1.getClass() != Class.class ||
 				t2.getClass() != Class.class ||
 				t3.getClass() != Class.class ||

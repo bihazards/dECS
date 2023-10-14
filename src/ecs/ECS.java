@@ -1,7 +1,6 @@
 package ecs;
 
 import printable.Printable;
-import proj.systems.System;
 
 import java.util.*;
 import java.util.List;
@@ -17,9 +16,6 @@ public class ECS extends Printable
 
 	// ComponentManager tings
 	private final Map<Archetype<?, ?, ?, ?, ?>, Map<Integer, ComponentBundle<?, ?, ?, ?, ?>>> components = new ConcurrentHashMap<>();
-
-	// SystemManager tings
-	private final List<System> systems = new ArrayList<>();
 
 	// Requests
 	private final List<ComponentBundle<?, ?, ?, ?, ?>> entitiesToAdd = new ArrayList<>();
@@ -382,7 +378,7 @@ public class ECS extends Printable
 					continue ;
 					// removeEntity() ?
 				}*/ // removed validation; removeEntity() should be handling this
-				addEntityIntoList(entities, archetype, entityEntry);
+				addEntryToEntityList(entities, archetype, entityEntry);
 			}
 		}
 		return entities;
@@ -411,7 +407,7 @@ public class ECS extends Printable
 					continue;
 					// removeEntity() ?
 				}*/
-				addEntityIntoList(entities, archetype, entityEntry);
+				addEntryToEntityList(entities, archetype, entityEntry);
 			}
 		}
 		return entities;
@@ -447,18 +443,18 @@ public class ECS extends Printable
 			Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponents = archetypeEntry.getValue();
 			for (Map.Entry<Integer, ComponentBundle<?, ?, ?, ?, ?>> entityEntry : archetypeComponents.entrySet())
 			{
-				addEntityIntoList(entities, archetype, entityEntry);
+				addEntryToEntityList(entities, archetype, entityEntry);
 			}
 		}
 		return entities;
 	}
 
-	private void addEntityIntoList(List<Entity> entities, Archetype<?, ?, ?, ?, ?> archetype, Map.Entry<Integer, ComponentBundle<?, ?, ?, ?, ?>> entityEntry)
+	private void addEntryToEntityList(List<Entity> entities, Archetype<?, ?, ?, ?, ?> archetype, Map.Entry<Integer, ComponentBundle<?, ?, ?, ?, ?>> entityEntry)
 	{
-		entities.add(entityFromEntry(archetype, entityEntry));
+		entities.add(entryToEntity(archetype, entityEntry));
 	}
 
-	private Entity entityFromEntry(Archetype<?, ?, ?, ?, ?> archetype, Map.Entry<Integer, ComponentBundle<?, ?, ?, ?, ?>> entityEntry)
+	private Entity entryToEntity(Archetype<?, ?, ?, ?, ?> archetype, Map.Entry<Integer, ComponentBundle<?, ?, ?, ?, ?>> entityEntry)
 	{
 		return new Entity(archetype, entityEntry.getKey(), entityEntry.getValue());
 	}
