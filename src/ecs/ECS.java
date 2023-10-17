@@ -3,6 +3,7 @@ package ecs;
 import ecs.requests.AddEntityRequest;
 import ecs.requests.ChangeArchetypeEntityRequest;
 import ecs.requests.DeleteEntityRequest;
+import ecs.requests.Request;
 import printable.Printable;
 
 import java.util.*;
@@ -13,8 +14,7 @@ public class ECS extends Printable
 	private EntityManager entityManager;
 
 	// Requests
-	private final List<AddEntityRequest> addEntityRequests = new ArrayList<>();
-	private final List<DeleteEntityRequest> deleteEntityRequests = new ArrayList<>();
+	private final LinkedList<Request> requests = new LinkedList<>();
 	private final HashMap<Integer, ChangeArchetypeEntityRequest> changeArchetypeEntityRequests = new HashMap<>();
 
 	// CONSTRUCTOR(s)
@@ -51,12 +51,13 @@ public class ECS extends Printable
 	/// REQUESTS
 	public final void requestAddEntity(Object ... components)
 	{
-		addEntityRequests.add(new AddEntityRequest(components));
+		requests.add(new AddEntityRequest(entityManager,components));
 	}
 
 	public final void requestDeleteEntity(Entity entity)
 	{
-		deleteEntityRequests.add(new DeleteEntityRequest(entity.getArchetype(), entity.getEntityID()));
+		requests.add(
+				new DeleteEntityRequest(new Entity(entity.getArchetype(), entity.getEntityID(), null), entityManager));
 	}
 
 	private ChangeArchetypeEntityRequest requestChangeEntityArchetype(Entity entity, Object... components)
@@ -73,7 +74,8 @@ public class ECS extends Printable
 		ChangeArchetypeEntityRequest changeArchetypeEntityRequest = changeArchetypeEntityRequests.get(entityID); // iff exists already, use existing request
 		if (changeArchetypeEntityRequest == null) // doesn't exist already
 		{
-			changeArchetypeEntityRequest = new ChangeArchetypeEntityRequest(entity.getArchetype());
+			changeArchetypeEntityRequest = new ChangeArchetypeEntityRequest(new Entity(entity.getArchetype(), entityID, null), entityManager);
+			requests.add(changeArchetypeEntityRequest);
 			changeArchetypeEntityRequests.put(entityID, changeArchetypeEntityRequest);
 		}
 		return changeArchetypeEntityRequest;
@@ -205,26 +207,11 @@ public class ECS extends Printable
 	* */
 	public void process()
 	{
-		for (AddEntityRequest addEntityRequest : addEntityRequests)
+		while(!requests.isEmpty())
 		{
-			entityManager.addEntity(addEntityRequest.components); // if one of the ? is Void, that's fine
+			requests.pop().process(); // pop() oldest + process()
 		}
-		addEntityRequests.clear();
-
-		for (DeleteEntityRequest deleteEntityRequest : deleteEntityRequests)
-		{
-			entityManager.removeEntity(deleteEntityRequest);
-			// printf("Processed DER of [%d]@%s; new size -> %d", deleteEntityRequest.getEntityID(), deleteEntityRequest.getArchetype(), size());
-		}
-		deleteEntityRequests.clear();
-
-		for (Map.Entry<Integer, ChangeArchetypeEntityRequest> entityArchetypeChangeRequestEntry : changeArchetypeEntityRequests.entrySet())
-		{
-			int entityID = entityArchetypeChangeRequestEntry.getKey();
-			ChangeArchetypeEntityRequest changeArchetypeEntityRequest = entityArchetypeChangeRequestEntry.getValue();
-
-			entityManager.changeEntityArchetype(entityID, changeArchetypeEntityRequest);
-		}
+		
 		changeArchetypeEntityRequests.clear();
 	}
 
