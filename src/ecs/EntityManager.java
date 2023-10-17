@@ -6,8 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EntityManager
 {
 	// EntityManager tings
-	private final int maxEntities; // max size of entityIDs (cusomizable in ctor)
-	private static final int ENTITYID_INVALID = -1;
+	public final int maxEntities; // max size of entityIDs (cusomizable in ctor)
+	public static final int ENTITYID_INVALID = -1;
 	public final Set<Integer> entityIDs; // note: use of Set vs List is ~2-3x slower
 	// private Set<Integer> reservedEntityIDs = new HashSet<>(); // SCRAPPED?
 
@@ -23,46 +23,6 @@ public class EntityManager
 
 	// METHODS
 	/// ADD/CREATE
-	/* int addEntity()
-	 *
-	 * RETURNS: int id OR invalid id value
-	 * */
-	public int addEntity(Object... components)
-	{
-		// test iff new eID available
-		// note: this ignores "reservedIDs" for now
-		int entityID = ENTITYID_INVALID;
-
-		if (components.length == 0 || components.length > 9)
-		{
-			return entityID;
-		}
-
-		if (entityIDs.size() < maxEntities)
-		{
-			for (int i = 0; i < maxEntities; i++)
-			{
-				if (!entityIDs.contains(i))
-				{
-					// reserve
-					entityID = i;
-					break;
-				}
-			}
-		} // else: v
-
-		if (entityID == ENTITYID_INVALID) // still invalid; no free id found
-		{
-			return entityID;
-		}
-
-		if (!putEntity(entityID, components))
-		{
-			return ENTITYID_INVALID;
-		}
-
-		return entityID;
-	}
 
 	/* putEntity()
 	 * - This version is intended for use when an id is already reserevd.
