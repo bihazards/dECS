@@ -49,12 +49,15 @@ public class UnitTestSystem1 implements System
 		for (Entity entity : ecs.entitiesWithComponents(RenderComponent.class))
 		{
 			ecs.requestDeleteEntity(entity);
+			// ecs.process() ?
 		}
 
 		// testing dupe components
-		int id = ecs.requestAddEntity(new RenderComponent(0), new TransformComponent(1,2), new TransformComponent(2,3));
+		/*int id = ecs.requestAddEntity(new RenderComponent(0), new TransformComponent(1,2), new TransformComponent(2,3));
 		ecs.process();
-		Printable.print("id=",id);
+		Printable.print("id=",id);*/ // Requires: reserve ID func
+		ecs.requestAddEntity(new RenderComponent(0), new TransformComponent(1,2), new TransformComponent(2,3)); // temp. replacement
+		ecs.process();
 		ecs.printAllComponents(); // should be 4 entities still, as EDR doesn't process immediately (yet)
 		//
 		Printable.print("UNIT TEST 1 COMPLETE");

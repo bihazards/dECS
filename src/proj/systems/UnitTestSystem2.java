@@ -11,7 +11,7 @@ public class UnitTestSystem2 implements System
 {
 	public void tick(ECS ecs)
 	{
-		// test EACR
+		// testing CAERs
 		for (Entity entity : ecs.entitiesWithArchetype(Archetype.archetypeOf(TransformComponent.class)))
 		{
 			ecs.requestAddComponent(entity, new RenderComponent(5));
@@ -22,7 +22,7 @@ public class UnitTestSystem2 implements System
 		Printable.print("--------------------");
 	}
 
-	/* ISSUE - EACRs print that they're processed properly in the console,
+	/* ISSUE - CAERs print that they're processed properly in the console,
 	* but ultimately do not show that they were.
 	*
 	* UPDATE - They print, but the new Component is type Class; the old Component
@@ -31,8 +31,8 @@ public class UnitTestSystem2 implements System
 	* FIXED - System method was passing .getClass() of each component*/
 
 	/*
-		- EACRs work for ADDing components, but not for REMOVing.
-		- Removals do seemingly nothing => EACR reads addition properly but not removal.
+		- CAERs work for ADDing components, but not for REMOVing.
+		- Removals do seemingly nothing => CAER reads addition properly but not removal.
 
 	 FIXED - changed componentsToRemove to also reference Class<?> and fixed ECS
 	 references.
