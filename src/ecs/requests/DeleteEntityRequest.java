@@ -32,7 +32,7 @@ public class DeleteEntityRequest implements Request // => package-private
 		Archetype<?, ?, ?, ?, ?> archetype = getArchetype();
 
 		//
-		Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponentMap = entityManager.components.get(archetype);
+		Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponentMap = entityManager.entityBundlesByArchetype.get(archetype);
 		if (archetypeComponentMap != null)
 		{
 			entityManager.entityIDs.remove(entityID);
@@ -40,7 +40,7 @@ public class DeleteEntityRequest implements Request // => package-private
 
 			if (archetypeComponentMap.isEmpty())
 			{
-				entityManager.components.remove(archetype);
+				entityManager.entityBundlesByArchetype.remove(archetype);
 			}
 		}
 	}

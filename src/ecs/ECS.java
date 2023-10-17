@@ -107,7 +107,7 @@ public class ECS extends Printable
 		// Map<Integer,ArrayList<Component>> entityMap = new HashMap<>();
 		// return this.proj.components.get(archetype);
 		List<Entity> entities = new ArrayList<>();
-		Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> entityMap = entityManager.components.get(archetype);
+		Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> entityMap = entityManager.entityBundlesByArchetype.get(archetype);
 		// print("searching for archetype ", archetype);
 		if (entityMap != null)
 		{
@@ -133,7 +133,7 @@ public class ECS extends Printable
 
 		for (Archetype<?, ?, ?, ?, ?> archetype : archetypes)
 		{
-			Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> entityMap = entityManager.components.get(archetype);
+			Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> entityMap = entityManager.entityBundlesByArchetype.get(archetype);
 			// print("searching for archetype ", archetype);
 
 			if (entityMap == null)
@@ -160,7 +160,7 @@ public class ECS extends Printable
 		List<Entity> entities = new ArrayList<>();
 
 		aLoop:
-		for (Map.Entry<Archetype<?, ?, ?, ?, ?>, Map<Integer, ComponentBundle<?, ?, ?, ?, ?>>> archetypeEntry : entityManager.components.entrySet())
+		for (Map.Entry<Archetype<?, ?, ?, ?, ?>, Map<Integer, ComponentBundle<?, ?, ?, ?, ?>>> archetypeEntry : entityManager.entityBundlesByArchetype.entrySet())
 		{
 			// test has proj.components
 			Archetype<?, ?, ?, ?, ?> archetype = archetypeEntry.getKey();
@@ -211,14 +211,14 @@ public class ECS extends Printable
 		{
 			requests.pop().process(); // pop() oldest + process()
 		}
-		
+
 		changeArchetypeEntityRequests.clear();
 	}
 
 	//
 	public void printAllComponents()
 	{
-		for (Map.Entry<Archetype<?, ?, ?, ?, ?>, Map<Integer, ComponentBundle<?, ?, ?, ?, ?>>> archetypeEntry : entityManager.components.entrySet())
+		for (Map.Entry<Archetype<?, ?, ?, ?, ?>, Map<Integer, ComponentBundle<?, ?, ?, ?, ?>>> archetypeEntry : entityManager.entityBundlesByArchetype.entrySet())
 		{
 			Archetype<?, ?, ?, ?, ?> archetype = archetypeEntry.getKey();
 			Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponents = archetypeEntry.getValue();

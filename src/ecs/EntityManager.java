@@ -12,7 +12,7 @@ public class EntityManager
 	// private Set<Integer> reservedEntityIDs = new HashSet<>(); // SCRAPPED?
 
 	// Entities (stored as ComponentBundles, keyed by Integer) keyed by Archetype
-	public final Map<Archetype<?, ?, ?, ?, ?>, Map<Integer, ComponentBundle<?, ?, ?, ?, ?>>> components = new ConcurrentHashMap<>();
+	public final Map<Archetype<?, ?, ?, ?, ?>, Map<Integer, ComponentBundle<?, ?, ?, ?, ?>>> entityBundlesByArchetype = new ConcurrentHashMap<>();
 
 	// CONSTRUCTOR
 	public EntityManager(int maxEntities)
@@ -94,11 +94,11 @@ public class EntityManager
 		}
 
 		// test iff archetype exists OR add
-		Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponents = this.components.get(archetype);
+		Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponents = this.entityBundlesByArchetype.get(archetype);
 		if (archetypeComponents == null) // iff not exists...
 		{
 			archetypeComponents = new HashMap<>(); // create...
-			this.components.put(archetype, archetypeComponents); // ...and put() in big map
+			this.entityBundlesByArchetype.put(archetype, archetypeComponents); // ...and put() in big map
 		}
 
 		// finally, add
@@ -106,11 +106,6 @@ public class EntityManager
 		archetypeComponents.put(entityID, bundle); // iff there is an entity there, too bad
 		return true;
 	}
-
-	/// CHANGE
-
-
-	/// REMOVE/DELETE
 
 	/// OTHER
 	public int size() // taxing; careful

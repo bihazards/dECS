@@ -49,7 +49,7 @@ public class ChangeArchetypeEntityRequest implements Request // => package-priva
 	{
 		Archetype<?, ?, ?, ?, ?> oldArchetype = getOldArchetype();
 
-		Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponentMap = entityManager.components.get(oldArchetype);
+		Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponentMap = entityManager.entityBundlesByArchetype.get(oldArchetype);
 		if (archetypeComponentMap == null)
 		{
 			// throw Exception - archetype doesn't exist => eID can't exist
@@ -108,7 +108,7 @@ public class ChangeArchetypeEntityRequest implements Request // => package-priva
 
 		if (archetypeComponentMap.isEmpty())
 		{
-			entityManager.components.remove(oldArchetype);
+			entityManager.entityBundlesByArchetype.remove(oldArchetype);
 		}
 
 		// print("Processed CAER -> ",ComponentBundle.bundleOf(finalComponents.toArray()[0], finalComponents.toArray()[1]));
