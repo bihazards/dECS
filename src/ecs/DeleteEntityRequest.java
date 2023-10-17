@@ -1,25 +1,53 @@
 package ecs;
 
-class DeleteEntityRequest // => package-private
+import java.util.Map;
+
+public class DeleteEntityRequest implements Request // => package-private
 {
 	/* This contains the data needed for ECS to process the deletion of an Entity */
-	private final Archetype<?,?,?,?,?> archetype;
-	private final int entityID ;
+	private final Entity entity;
+	private final EntityManager entityManager;
 
-	public DeleteEntityRequest(Archetype<?,?,?,?,?> archetype, int entityID)
+	public DeleteEntityRequest(Entity entity, EntityManager entityManager)
 	{
-		this.archetype = archetype;
-		this.entityID = entityID;
+		this.entity = entity;
+		this.entityManager = entityManager;
 	}
 
-	// getters
+	// METHODS
+	/// INHERITED
+	public void process()
+	{
+		removeEntity();
+	}
+
+	public void removeEntity()
+	{
+		int entityID = getEntityID();
+		Archetype<?, ?, ?, ?, ?> archetype = getArchetype();
+		
+		//
+		Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponentMap = entityManager.components.get(archetype);
+		if (archetypeComponentMap != null)
+		{
+			entityManager.entityIDs.remove(entityID);
+			archetypeComponentMap.remove(entityID);
+
+			if (archetypeComponentMap.isEmpty())
+			{
+				entityManager.components.remove(archetype);
+			}
+		}
+	}
+
+	/// GETTERS
 	public Archetype<?,?,?,?,?> getArchetype()
 	{
-		return archetype;
+		return entity.getArchetype();
 	}
 
 	public int getEntityID()
 	{
-		return entityID;
+		return entity.getEntityID();
 	}
 }

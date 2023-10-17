@@ -111,23 +111,6 @@ public class EntityManager
 
 
 	/// REMOVE/DELETE
-	public void removeEntity(DeleteEntityRequest deleteEntityRequest)
-	{
-		int entityID = deleteEntityRequest.getEntityID();
-		Archetype<?, ?, ?, ?, ?> archetype = deleteEntityRequest.getArchetype();
-		//
-		Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponentMap = this.components.get(archetype);
-		if (archetypeComponentMap != null)
-		{
-			entityIDs.remove(entityID);
-			archetypeComponentMap.remove(entityID);
-
-			if (archetypeComponentMap.isEmpty())
-			{
-				this.components.remove(archetype);
-			}
-		}
-	}
 
 	/// OTHER
 	public int size() // taxing; careful
