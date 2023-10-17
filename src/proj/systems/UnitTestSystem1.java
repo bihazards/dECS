@@ -11,12 +11,13 @@ public class UnitTestSystem1 implements System
 	public void tick(ECS ecs)
 	{
 		// Test 1: Simple addition
-		ecs.addEntity(new TransformComponent(3,14));
+		ecs.requestAddEntity(new TransformComponent(3,14));
 		// Test 2: Addition of second archetype
-		ecs.addEntity(new RenderComponent(5));
+		ecs.requestAddEntity(new RenderComponent(5));
 		// Test 3: Interchangeable order testing + 3rd archetype
-		ecs.addEntity(new RenderComponent(5), new TransformComponent(16,12));
-		ecs.addEntity(new TransformComponent(16,12), new RenderComponent(5));
+		ecs.requestAddEntity(new RenderComponent(5), new TransformComponent(16,12));
+		ecs.requestAddEntity(new TransformComponent(16,12), new RenderComponent(5));
+		ecs.process();
 
 		Printable.print("all components [should be 4 entities->2 w/ rC+tC]");
 		ecs.printAllComponents();
@@ -51,7 +52,8 @@ public class UnitTestSystem1 implements System
 		}
 
 		// testing dupe components
-		int id = ecs.addEntity(new RenderComponent(0), new TransformComponent(1,2), new TransformComponent(2,3));
+		int id = ecs.requestAddEntity(new RenderComponent(0), new TransformComponent(1,2), new TransformComponent(2,3));
+		ecs.process();
 		Printable.print("id=",id);
 		ecs.printAllComponents(); // should be 4 entities still, as EDR doesn't process immediately (yet)
 		//
