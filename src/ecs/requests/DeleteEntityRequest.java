@@ -1,4 +1,9 @@
-package ecs;
+package ecs.requests;
+
+import ecs.Archetype;
+import ecs.ComponentBundle;
+import ecs.Entity;
+import ecs.EntityManager;
 
 import java.util.Map;
 
@@ -25,7 +30,7 @@ public class DeleteEntityRequest implements Request // => package-private
 	{
 		int entityID = getEntityID();
 		Archetype<?, ?, ?, ?, ?> archetype = getArchetype();
-		
+
 		//
 		Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponentMap = entityManager.components.get(archetype);
 		if (archetypeComponentMap != null)

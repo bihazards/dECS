@@ -1,4 +1,4 @@
-package ecs;
+package ecs.requests;
 
 public interface Request
 {

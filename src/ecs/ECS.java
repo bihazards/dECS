@@ -1,5 +1,8 @@
 package ecs;
 
+import ecs.requests.AddEntityRequest;
+import ecs.requests.ChangeArchetypeEntityRequest;
+import ecs.requests.DeleteEntityRequest;
 import printable.Printable;
 
 import java.util.*;

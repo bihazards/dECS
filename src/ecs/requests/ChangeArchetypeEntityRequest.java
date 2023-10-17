@@ -1,4 +1,9 @@
-package ecs;
+package ecs.requests;
+
+import ecs.Archetype;
+import ecs.ComponentBundle;
+import ecs.Entity;
+import ecs.EntityManager;
 
 import java.util.ArrayList;
 import java.util.HashSet;

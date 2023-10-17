@@ -1,4 +1,6 @@
-package ecs;
+package ecs.requests;
+
+import ecs.EntityManager;
 
 public class AddEntityRequest implements Request
 {
