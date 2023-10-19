@@ -60,14 +60,8 @@ public class ECS extends Printable
 				new DeleteEntityRequest(new Entity(entity.getArchetype(), entity.getEntityID(), null), entityManager));
 	}
 
-	private ChangeArchetypeEntityRequest requestChangeEntityArchetype(Entity entity, Object... components)
+	private ChangeArchetypeEntityRequest requestChangeEntityArchetype(Entity entity)
 	{
-		if (components.length == 0)
-		{
-			// throw Exception;
-			return null;
-		}
-
 		// check iff entity has change request already
 		int entityID = entity.getEntityID();
 
@@ -83,21 +77,43 @@ public class ECS extends Printable
 
 	public void requestAddComponent(Entity entity, Object... componentsToAdd)
 	{ // note: can be called w/ 0-length; can fix with a definite param before varargs but eh
-		ChangeArchetypeEntityRequest changeArchetypeEntityRequest = requestChangeEntityArchetype(entity, componentsToAdd);
-
-		for (Object componentToAdd : componentsToAdd)
+		try
 		{
-			changeArchetypeEntityRequest.componentsToAdd.add(componentToAdd);
+			if (componentsToAdd.length == 0)
+			{
+				throw new IllegalArgumentException("Missing args for requestAddComponent()");
+			}
+
+			ChangeArchetypeEntityRequest changeArchetypeEntityRequest = requestChangeEntityArchetype(entity);
+
+			for (Object componentToAdd : componentsToAdd)
+			{
+				changeArchetypeEntityRequest.componentsToAdd.add(componentToAdd);
+			}
+		} catch(Exception e)
+		{
+			e.printStackTrace();
 		}
 	}
 
 	public void requestRemoveComponent(Entity entity, Class<?>... componentsToRemove)
 	{
-		ChangeArchetypeEntityRequest changeArchetypeEntityRequest = requestChangeEntityArchetype(entity, componentsToRemove);
-
-		for (Class<?> componentToRemove : componentsToRemove)
+		try
 		{
-			changeArchetypeEntityRequest.componentsToRemove.add(componentToRemove);
+			if (componentsToRemove.length == 0)
+			{
+				throw new IllegalArgumentException("Missing args for requestRemoveComponent()");
+			}
+
+			ChangeArchetypeEntityRequest changeArchetypeEntityRequest = requestChangeEntityArchetype(entity);
+
+			for (Class<?> componentToRemove : componentsToRemove)
+			{
+				changeArchetypeEntityRequest.componentsToRemove.add(componentToRemove);
+			}
+		} catch(Exception e)
+		{
+			e.printStackTrace();
 		}
 	}
 

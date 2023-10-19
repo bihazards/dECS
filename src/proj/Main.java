@@ -23,8 +23,6 @@ public class Main extends Printable
 		ecs.process();
 		ecs.printAllComponents(); // should be [1] entity, w/ an rC
 
-		// ecs.addEntity(new RenderComponent(1),new TransformComponent(1,2),new TransformComponent(1,2));
-
 		long end = time();
 		print("Runtime: ",(end-start)/1000f,"s");
 	}

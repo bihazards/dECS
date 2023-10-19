@@ -42,24 +42,25 @@ public class ChangeArchetypeEntityRequest implements Request // => package-priva
 	/// INHERITED
 	public void process()
 	{
-		changeEntityArchetype(getEntityID());
+		changeEntityArchetype();
 	}
 
-	private void changeEntityArchetype(int entityID)
+	private void changeEntityArchetype()
 	{
+		int entityID = getEntityID();
 		Archetype<?, ?, ?, ?, ?> oldArchetype = getOldArchetype();
 
 		Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponentMap = entityManager.entityBundlesByArchetype.get(oldArchetype);
 		if (archetypeComponentMap == null)
 		{
-			// throw Exception - archetype doesn't exist => eID can't exist
+			// throw (NP?)Exception - archetype doesn't exist => eID can't exist
 			return;
 		}
 
 		ComponentBundle<?, ?, ?, ?, ?> oldBundle = archetypeComponentMap.get(entityID);
 		if (oldBundle == null)
 		{
-			// throw Exception - eID doesn't exist
+			// throw (NP?)Exception - eID doesn't exist
 			return;
 		}
 
@@ -99,14 +100,17 @@ public class ChangeArchetypeEntityRequest implements Request // => package-priva
 			finalComponents.add(componentsToAdd.remove(0));
 		}
 
-		archetypeComponentMap.remove(entityID);
 		if (finalComponents.size() > 0)
 		{
 			// postcond
+			archetypeComponentMap.remove(entityID);
 			entityManager.putEntity(entityID, finalComponents.toArray());
-		} // else: exception?
+		} else // remove iff no components
+		{
+			entityManager.removeEntity(oldArchetype,entityID);
+		}
 
-		if (archetypeComponentMap.isEmpty())
+		if (archetypeComponentMap.isEmpty()) // no more entities in old archetype map
 		{
 			entityManager.entityBundlesByArchetype.remove(oldArchetype);
 		}

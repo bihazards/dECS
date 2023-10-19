@@ -23,26 +23,7 @@ public class DeleteEntityRequest implements Request // => package-private
 	/// INHERITED
 	public void process()
 	{
-		removeEntity();
-	}
-
-	public void removeEntity()
-	{
-		int entityID = getEntityID();
-		Archetype<?, ?, ?, ?, ?> archetype = getArchetype();
-
-		//
-		Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponentMap = entityManager.entityBundlesByArchetype.get(archetype);
-		if (archetypeComponentMap != null)
-		{
-			entityManager.entityIDs.remove(entityID);
-			archetypeComponentMap.remove(entityID);
-
-			if (archetypeComponentMap.isEmpty())
-			{
-				entityManager.entityBundlesByArchetype.remove(archetype);
-			}
-		}
+		entityManager.removeEntity(getArchetype(), getEntityID());
 	}
 
 	/// GETTERS

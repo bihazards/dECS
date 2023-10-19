@@ -107,6 +107,22 @@ public class EntityManager
 		return true;
 	}
 
+	/// REMOVE
+	public void removeEntity(Archetype<?, ?, ?, ?, ?> archetype, int entityID)
+	{
+		Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponentMap = entityBundlesByArchetype.get(archetype);
+		if (archetypeComponentMap != null)
+		{
+			entityIDs.remove(entityID);
+			archetypeComponentMap.remove(entityID);
+
+			if (archetypeComponentMap.isEmpty())
+			{
+				entityBundlesByArchetype.remove(archetype);
+			}
+		}
+	}
+
 	/// OTHER
 	public int size() // taxing; careful
 	{
