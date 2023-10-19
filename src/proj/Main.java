@@ -21,7 +21,7 @@ public class Main extends Printable
 			system.tick(ecs);
 		}
 		ecs.process();
-		ecs.printAllComponents(); // should be [1] entity, w/ an rC
+		print(ecs); // should be [1] entity, w/ an rC
 
 		long end = time();
 		print("Runtime: ",(end-start)/1000f,"s");

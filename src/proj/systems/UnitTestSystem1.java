@@ -6,7 +6,7 @@ import proj.components.InputComponent;
 import proj.components.RenderComponent;
 import proj.components.TransformComponent;
 
-public class UnitTestSystem1 implements System
+public class UnitTestSystem1 extends System
 {
 	public void tick(ECS ecs)
 	{
@@ -19,9 +19,9 @@ public class UnitTestSystem1 implements System
 		ecs.requestAddEntity(new TransformComponent(16,12), new RenderComponent(5));
 		ecs.process();
 
-		Printable.print("all components [should be 4 entities->2 w/ rC+tC]");
-		ecs.printAllComponents();
-		Printable.print(ecs.entitiesWithArchetype(Archetype.archetypeOf(TransformComponent.class,RenderComponent.class)).size()); // why does this not work anymore ?
+		print("all components [should be 4 entities->2 w/ rC+tC]");
+		print(ecs);
+		print(ecs.entitiesWithArchetype(Archetype.archetypeOf(TransformComponent.class,RenderComponent.class)).size()); // why does this not work anymore ?
 
 		// testing searching by archetype
 		for (Entity entity : ecs.entitiesWithArchetype(Archetype.archetypeOf(TransformComponent.class,RenderComponent.class)) )
@@ -29,7 +29,7 @@ public class UnitTestSystem1 implements System
 			TransformComponent transformComponent = entity.getBundle().get(TransformComponent.class);
 			RenderComponent renderComponent = entity.getBundle().get(RenderComponent.class);
 			// printf("tC[?null=%b], rC[?null=%b]",transformComponent==null,renderComponent==null);
-			Printable.printf("[%d].T=(%d,%d); .R=(depth=%d)",entity.getEntityID(),transformComponent.x,transformComponent.y,renderComponent.depth);
+			printf("[%d].T=(%d,%d); .R=(depth=%d)",entity.getEntityID(),transformComponent.x,transformComponent.y,renderComponent.depth);
 		}
 
 		// testing searching by one specific component
@@ -37,10 +37,10 @@ public class UnitTestSystem1 implements System
 		{
 			TransformComponent transformComponent = entity.getBundle().get(TransformComponent.class);
 
-			Printable.printf("[%d].T=(%d,%d)",entity.getEntityID(),transformComponent.x,transformComponent.y);
+			printf("[%d].T=(%d,%d)",entity.getEntityID(),transformComponent.x,transformComponent.y);
 		}
 
-		Printable.print(ecs.entitiesWithArchetype(Archetype.archetypeOf(InputComponent.class)).size()); // expected => 0
+		print(ecs.entitiesWithArchetype(Archetype.archetypeOf(InputComponent.class)).size()); // expected => 0
 
 		// TEST needed: incorrect archetype, incorrect With() 	[done, done]
 		// TEST needed: With()									[done]
@@ -58,9 +58,9 @@ public class UnitTestSystem1 implements System
 		Printable.print("id=",id);*/ // Requires: reserve ID func
 		ecs.requestAddEntity(new RenderComponent(0), new TransformComponent(1,2), new TransformComponent(2,3)); // temp. replacement
 		ecs.process();
-		ecs.printAllComponents(); // should be 4 entities still, as EDR doesn't process immediately (yet)
+		print(ecs.toString()); // should be 4 entities still, as EDR doesn't process immediately (yet)
 		//
-		Printable.print("UNIT TEST 1 COMPLETE");
-		Printable.print("--------------------");
+		print("UNIT TEST 1 COMPLETE");
+		print("--------------------");
 	}
 }

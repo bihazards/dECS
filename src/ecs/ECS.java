@@ -9,7 +9,7 @@ import printable.Printable;
 import java.util.*;
 import java.util.List;
 
-public class ECS extends Printable
+public class ECS
 {
 	private EntityManager entityManager;
 
@@ -232,22 +232,25 @@ public class ECS extends Printable
 	}
 
 	//
-	public void printAllComponents()
+	@Override
+	public String toString()
 	{
+		StringBuilder builder = new StringBuilder();
 		for (Map.Entry<Archetype<?, ?, ?, ?, ?>, Map<Integer, ComponentBundle<?, ?, ?, ?, ?>>> archetypeEntry : entityManager.entityBundlesByArchetype.entrySet())
 		{
 			Archetype<?, ?, ?, ?, ?> archetype = archetypeEntry.getKey();
 			Map<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponents = archetypeEntry.getValue();
 
-			print("Archetype: ", archetype);
+			builder.append("Archetype: ").append(archetype);
 			for (Map.Entry<Integer, ComponentBundle<?, ?, ?, ?, ?>> archetypeComponentEntry : archetypeComponents.entrySet())
 			{
 				int entityID = archetypeComponentEntry.getKey();
 				ComponentBundle<?, ?, ?, ?, ?> componentBundle = archetypeComponentEntry.getValue();
 
-				print(entityID, "\t|\t", componentBundle.toString());
+				builder.append(entityID).append("\t|\t").append(componentBundle.toString()).append("\n");
 			}
-			print("--------------------------");
+			builder.append("--------------------------").append("\n");
 		}
+		return builder.toString();
 	}
 }

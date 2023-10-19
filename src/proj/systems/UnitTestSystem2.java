@@ -7,7 +7,7 @@ import printable.Printable;
 import proj.components.RenderComponent;
 import proj.components.TransformComponent;
 
-public class UnitTestSystem2 implements System
+public class UnitTestSystem2 extends System
 {
 	public void tick(ECS ecs)
 	{
@@ -18,8 +18,8 @@ public class UnitTestSystem2 implements System
 			ecs.requestRemoveComponent(entity, TransformComponent.class);
 		}
 
-		Printable.print("UNIT TEST 2 COMPLETE");
-		Printable.print("--------------------");
+		print("UNIT TEST 2 COMPLETE");
+		print("--------------------");
 	}
 
 	/* ISSUE - CAERs print that they're processed properly in the console,
