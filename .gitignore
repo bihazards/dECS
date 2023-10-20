@@ -1,0 +1,12 @@
+/src/printable/
+/src/printable/Printable.java
+/src/proj/
+/src/proj/components/
+/src/proj/components/InputComponent.java
+/src/proj/components/RenderComponent.java
+/src/proj/components/TransformComponent.java
+/src/proj/systems/
+/src/proj/systems/System.java
+/src/proj/systems/UnitTestSystem1.java
+/src/proj/systems/UnitTestSystem2.java
+/src/proj/Main.java
